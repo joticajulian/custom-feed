@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8"/>
+		<title>Custom Feed</title>
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"/>
+		<link rel="stylesheet" type="text/css" href="./css/main.css"/>
+		<link href="https://fonts.googleapis.com/css?family=Montserrat|Sansita" rel="stylesheet"/>
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>	
+		<script src="https://cdn.steemjs.com/lib/latest/steem.min.js"></script>
+	</head>
+	<body>
+		<div class="container bg-white">
+            <div class="jumbotron bg-white">
+                <h1>Custom Feed</h1>
+                <p>Customize the authors and posts that you want to read on Steemit. By <a href="https://steemit.com/@jga/">@jga</a></p>
+            </div>            
+            <div class="row">
+                <!--<div class="col-sm-12 col-xs-12"><hr></div>
+                <div class="col-sm-8 col-xs-6">
+                    <div class="col-sm-12 col-xs-12" id="form-order-by-curation">
+                        <div class="input-group">
+                            <input type="text" class="form-control" id="account" placeholder="Your account or Vote value">
+                            <span class="input-group-btn">
+                                <button class="btn btn-secondary" type="button" onclick="reorderVoteValue()">Reorder</button>
+                            </span>
+                        </div>
+                        <div class="col-sm-12 col-xs-12" style="padding-top:5px;">
+                            <span>Your upvote: </span><span id="your_upvote"></span>
+                        </div>                        
+                    </div>
+                </div>                
+                <div class="col-sm-4 col-xs-6 pull-right">
+                    <select class="form-control" id="selOrder">
+                        <option class="is_ml" value="1">Order by curation</option>
+                        <option class="is_ml" value="2">Order by bid value</option>
+                        <option class="is_ml" value="3">Order by current payout</option>
+                        <option class="is_ml" value="4">Order by remaining time</option>
+                    </select>
+                </div>
+                <div class="col-sm-12 col-xs-12"><hr></div>
+                
+                <div class="col-sm-12 col-xs-12">
+				    <div class="progress">
+					    <div id="progress-bar" class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0%;">
+								0
+						</div>
+					</div>
+				</div>-->
+                
+                <div class="col-sm-12 col-sx-12">
+                    <ul id="post_list">
+                        <span>Loading...</span>
+                    </ul>
+                </div>    
+            </div>
+        </div>
+		<div id="footer" class="container-fluid">
+			<span id="nextvoteby" class="is_ml"> Custom Feed by <a href="https://steemit.com/@jga/">@jga</a></span><br>
+			<span id="seeitongithub" class="is_ml"> See it on <a href="https://github.com/joticajulian/custom-feed/">github.com</a></span>						
+		</div>
+	</body>
+	<script src="./js/custom-feed.js?1"></script>    
+</html>

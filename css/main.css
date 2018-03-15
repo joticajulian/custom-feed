@@ -1,10 +1,21 @@
+html
+{
+    font-size: 16px;
+}
+
 body
 {
 	margin: 0;
 	padding: 0;
 	color: #555;
     font-family: 'helvetica', sans-serif;
+    font-size: 16px;
 	background: #EFEFEF;
+}
+
+a
+{
+    color: #000000;
 }
 
 #header
@@ -25,7 +36,7 @@ body
 	padding: 50px;
 	margin: 0;
 	text-align: center;
-	background-color: black;
+	background-color: white;
 	border-top: 1px solid #000;
 }
 
@@ -116,11 +127,27 @@ body
 .user_name
 {
     margin-bottom: 5px;
+    font-size: 0.875rem;
 }
 
-.post_title
+.author
 {
-    font-size: 18px;
+    
+}
+
+.timestamp
+{
+    color: #788187;
+}
+
+.tag
+{
+    color: #788187;
+}
+
+.post_content
+{
+    font-size: 1rem;
 }
 
 .post
@@ -135,5 +162,24 @@ body
     height: 24px;
     margin-right: 8px;
     display: inline;
+}
+
+.align-image
+{
+    vertical-align: text-bottom;
+    margin-left: 4px;
+    margin-right: -30px;
+}
+
+.crop {
+    width: 130px;
+    height: 73.13px;
+    overflow: hidden;
+}
+
+.crop img {
+    awidth: 400px;
+    aheight: 300px;
+    amargin: -75px 0 0 -100px;
 }
 

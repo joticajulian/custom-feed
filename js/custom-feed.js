@@ -6,6 +6,7 @@ var posts = [];
 //var no_profile_image = 'https://steemit-production-imageproxy-thumbnail.s3.amazonaws.com/U5ds8wePoj1V1DoRR4bzzKUARNiywjp_64x64';
 var explorer = "https://steemit.com";
 var firstTime = true;
+var idLastPostShowed = -1;
 
 $(function () {
   getQuery();
@@ -79,10 +80,11 @@ function getFeed(){
           return 0;
         });
         
-        $('#post_list').text("");
-        for(var i=0;i<posts.length;i++){          
+        //$('#post_list').text("");
+        for(var i=idLastPostShowed+1;i<posts.length;i++){          
           if(typeof accounts.find(function(a){return a.last.author == posts[i].author && a.last.permlink == posts[i].permlink&& a.last.end==false}) !== 'undefined') break;
           $('#post_list').append(postHtml(posts[i]));
+          idLastPostShowed = i;
         }
         firstTime = false;
       }

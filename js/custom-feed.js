@@ -12,12 +12,15 @@ var runningGetFeed = false;
 now = new Date();
 var rpc_nodes = [
   {url:"https://api.steemit.com",timeLastResponse:now},
+  {url:"https://steemd.pevo.science",timeLastResponse:now},
+  {url:"https://seed.bitcoiner.me",timeLastResponse:now},
   {url:"https://rpc.buildteam.io",timeLastResponse:now},
+  {url:"https://minnowsupportproject.org",timeLastResponse:now},
   {url:"https://steemd.minnowsupportproject.org",timeLastResponse:now},
   {url:"https://steemd.privex.io",timeLastResponse:now},
   {url:"https://gtg.steem.house:8090",timeLastResponse:now}  
 ];
-var id_rpc_node = 1;
+var id_rpc_node = 0;
 
 $(function () {
   $('#changing-node').hide();

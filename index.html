@@ -51,9 +51,14 @@
 				</div>-->
                 
                 <div class="col-sm-12 col-sx-12">
-                    <ul id="post_list">
-                        <span>Loading...</span>
-                    </ul>
+                    <ul id="post_list"></ul>
+                    <center><div class="row loader"></div></center>
+                    <div id="error-loading"class="alert alert-danger">
+                      <strong>Error loading!</strong> Try it again.
+                    </div>
+                    <div id="changing-node"class="alert alert-warning">
+                      <strong>Problems with the connection!</strong>
+                    </div>
                 </div>    
             </div>
         </div>
@@ -63,5 +68,5 @@
 		</div>
 	</body>
     <script src="./js/utils.js?1"></script>
-	<script src="./js/custom-feed.js?1"></script>        
+	<script src="./js/custom-feed.js?2"></script>        
 </html>

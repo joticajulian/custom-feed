@@ -183,3 +183,25 @@ a
     amargin: -75px 0 0 -100px;
 }
 
+.loader {
+  border: 2px solid #FFFFFF;  
+  border-radius: 50%;
+  border-top: 2px solid #06D6A9;
+  border-right: 2px solid #06D6A9;
+  width: 20px;
+  height: 20px;
+  -webkit-animation: spin 0.7s linear infinite; /* Safari */
+  animation: spin 0.7s linear infinite;
+}
+
+/* Safari */
+@-webkit-keyframes spin {
+  0% { -webkit-transform: rotate(0deg); }
+  100% { -webkit-transform: rotate(360deg); }
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+

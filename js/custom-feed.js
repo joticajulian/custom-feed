@@ -7,36 +7,81 @@ var posts = [];
 var explorer = "https://steemit.com";
 var firstTime = true;
 var idLastPostShowed = -1;
+var runningGetFeed = false;
+
+now = new Date();
+var rpc_nodes = [
+  {url:"https://api.steemit.com",timeLastResponse:now},
+  {url:"https://rpc.buildteam.io",timeLastResponse:now},
+  {url:"https://steemd.minnowsupportproject.org",timeLastResponse:now},
+  {url:"https://steemd.privex.io",timeLastResponse:now},
+  {url:"https://gtg.steem.house:8090",timeLastResponse:now}  
+];
+var id_rpc_node = 1;
 
 $(function () {
+  $('#changing-node').hide();
+  setApiNode();  
   getQuery();
   getFeed();
+  
+  checkTime();
+  setInterval(checkTime, 2000);
   
   $(window).on("scroll", function() {
 	var scrollHeight = $(document).height();
 	var scrollPosition = $(window).height() + $(window).scrollTop();
 	if ((scrollHeight - scrollPosition) / scrollHeight === 0) {
-	  getFeed();
+	  if(!runningGetFeed) getFeed();
 	}
   });
 });
 
 function getFeed(){
+  runningGetFeed = true;
+  var endFeed = true;
+  var actual_node = id_rpc_node;
+  rpc_nodes[actual_node].timeLastResponse = new Date();    
+  
   if(accounts.length == 0) console.log("No accounts");
-  feedLoaded = 0;
+  var numResponses = 0;  
+  $('#error-loading').hide();
   
   accounts.forEach(function(account){
+    if(account.last.end) return;
+    endFeed = false;
+    
+    $('.loader').show();    
     var query = {
       limit:limit,
       tag:account.name,
       start_author:account.last.author,
       start_permlink:account.last.permlink
     };
-      
+    
     steem.api.getDiscussionsByBlog(query, function(err, result){
-      feedLoaded++;
+      if(actual_node != id_rpc_node) return;
+      
+      numResponses++;      
+      rpc_nodes[actual_node].timeLastResponse = new Date();
       if (err || !result){
         console.log('Error loading account feed: ' + err);
+        if(numResponses < accounts.length) return;
+        
+        id_rpc_node++;
+        if(id_rpc_node < rpc_nodes.length){
+          $('#changing-node').html('<strong>Problems with the connection!</strong> We are changing to node <strong>'+rpc_nodes[id_rpc_node].url+'</strong>. Thanks for waiting.');
+          $('#changing-node').show();
+          setApiNode();   
+          getFeed();          
+        }else{
+          $('#error-loading').show();
+          $('#changing-node').hide();
+          $('.loader').hide();
+          id_rpc_node = 0;
+          runningGetFeed = false;
+          console.log("Error loading. Problems with all nodes");
+        }
         return;
       }
       
@@ -54,14 +99,16 @@ function getFeed(){
       var i=1;
       if(firstTime) i=0;
       while(i<result.length){
-        posts.push(result[i]);
+        if(typeof posts.find(function(p){return p.author == result[i].author && p.permlink == result[i].permlink}) === 'undefined'){
+          posts.push(result[i]);
+        }        
         /*if(typeof author_names.find(function(a){return a==result[i].author}) === 'undefined'){
           author_names.push(result[i].author);  
         }*/
         i++;
       }
       
-      if(feedLoaded == accounts.length){
+      if(numResponses == accounts.length){
         /*steem.api.getAccounts(author_names, function(err, result){
           if (err || !result){
             console.log('Error loading profile pictures: ' + err);            
@@ -80,16 +127,39 @@ function getFeed(){
           return 0;
         });
         
-        //$('#post_list').text("");
         for(var i=idLastPostShowed+1;i<posts.length;i++){          
           if(typeof accounts.find(function(a){return a.last.author == posts[i].author && a.last.permlink == posts[i].permlink&& a.last.end==false}) !== 'undefined') break;
           $('#post_list').append(postHtml(posts[i]));
           idLastPostShowed = i;
         }
+        $('.loader').hide();
+        $('#changing-node').hide();
         firstTime = false;
+        runningGetFeed = false;
+        console.log("Posts loaded");
       }
     });
   });
+  if(endFeed){
+    runningGetFeed = false;  
+    console.log("No more posts to show");
+  }  
+}
+
+function checkTime(){
+  if(!runningGetFeed) return;
+  var t = rpc_nodes[id_rpc_node].timeLastResponse;
+  if(new Date() - t > 10000){
+    console.log("Time expired: aborted");
+    id_rpc_node++;
+    if(id_rpc_node == rpc_nodes.length) id_rpc_node = 0;
+    
+    $('#changing-node').html('<strong>Time expired!</strong> We are changing to node <strong>'+rpc_nodes[id_rpc_node].url+'</strong>. Thanks for waiting.');
+    $('#changing-node').show();
+    
+    setApiNode();
+    getFeed();
+  }
 }
 
 function postHtml(post){
@@ -183,5 +253,13 @@ function getQuery(){
       }
     }
   }  
+}
+
+function setApiNode(){
+  var n = id_rpc_node;
+  if(n >= rpc_nodes.length) return false;
+  steem.api.setOptions({ transport: 'http', uri: rpc_nodes[n].url, url: rpc_nodes[n].url });
+  console.log('RPC Node: '+rpc_nodes[n].url); 
+  return true;
 }
 

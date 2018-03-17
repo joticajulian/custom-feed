@@ -9,6 +9,31 @@ var firstTime = true;
 var idLastPostShowed = -1;
 var runningGetFeed = false;
 
+var steem_price = 0;
+var reward_balance = 0;
+var recent_claims = 1;
+
+
+//Filter options
+var MIN_REP = -1000;
+var MAX_REP = 1000;
+var MIN_PAYOUT = 0;
+var MAX_PAYOUT = 1000000;
+var MIN_PAYOUTCOMMENT = 0;
+var MAX_PAYOUTCOMMENT = 1000000;
+var MIN_VOTES = 0;
+var MAX_VOTES = 10000000;
+var MIN_COMMENTS = 0;
+var MAX_COMMENTS = 10000000;
+var MIN_BODYLENGTH = 0;
+var MAX_BODYLENGTH = 10000000;
+var MIN_TIMESTAMP = new Date('2016-01-01');
+var MAX_TIMESTAMP = new Date();
+var TAGS_ALLOWED = [];
+var TAGS_AVOIDED = [];
+var VOTES_ALLOWED = [];
+var VOTES_AVOIDED = [];
+
 now = new Date();
 var rpc_nodes = [
   {url:"https://api.steemit.com",timeLastResponse:now},
@@ -26,19 +51,53 @@ $(function () {
   $('#changing-node').hide();
   setApiNode();  
   getQuery();
-  getFeed();
-  
-  checkTime();
-  setInterval(checkTime, 2000);
-  
-  $(window).on("scroll", function() {
-	var scrollHeight = $(document).height();
-	var scrollPosition = $(window).height() + $(window).scrollTop();
-	if ((scrollHeight - scrollPosition) / scrollHeight === 0) {
-	  if(!runningGetFeed) getFeed();
-	}
-  });
+  initConnectionSteemApi();
 });
+
+function handleErrorPrice(err){
+  console.log("Error loading the price data: "+err);
+  id_rpc_node++;
+  if(id_rpc_node == rpc_nodes.length) id_rpc_node = 0;
+  setApiNode();
+  initConnectionSteemApi();
+}
+
+function initConnectionSteemApi(){  
+  steem.api.getCurrentMedianHistoryPrice(function(err, result){
+    if (err || !result){
+      handleErrorPrice(err);
+      return;
+    }
+    
+    steem_price = parseFloat(result.base.replace(" SBD",""))/parseFloat(result.quote.replace(" STEEM",""));
+    console.log("steem_price: "+steem_price);
+    
+    steem.api.getRewardFund("post", function(err, result){    
+      if (err || !result){
+        handleErrorPrice(err);
+        return;
+      }
+    
+      reward_balance = parseFloat(result.reward_balance.replace(" STEEM",""));
+      recent_claims = parseInt(result.recent_claims);
+      console.log("reward_balance: "+reward_balance);
+      console.log("recent_claims: "+recent_claims);
+      
+      getFeed();
+  
+      checkTime();
+      setInterval(checkTime, 2000);
+  
+      $(window).on("scroll", function() {
+	    var scrollHeight = $(document).height();
+	    var scrollPosition = $(window).height() + $(window).scrollTop();
+	    if ((scrollHeight - scrollPosition) / scrollHeight === 0) {
+	      if(!runningGetFeed) getFeed();
+	    }
+      });      
+    });    
+  });  
+}
 
 function getFeed(){
   runningGetFeed = true;
@@ -103,7 +162,7 @@ function getFeed(){
       if(firstTime) i=0;
       while(i<result.length){
         if(typeof posts.find(function(p){return p.author == result[i].author && p.permlink == result[i].permlink}) === 'undefined'){
-          posts.push(result[i]);
+          if(postPassFilter(result[i])) posts.push(result[i]);
         }        
         /*if(typeof author_names.find(function(a){return a==result[i].author}) === 'undefined'){
           author_names.push(result[i].author);  
@@ -135,6 +194,7 @@ function getFeed(){
           $('#post_list').append(postHtml(posts[i]));
           idLastPostShowed = i;
         }
+        //if(firstTime) $('#post-data').html(getContentHtml(posts[0].body));
         $('.loader').hide();
         $('#changing-node').hide();
         firstTime = false;
@@ -147,6 +207,47 @@ function getFeed(){
     runningGetFeed = false;  
     console.log("No more posts to show");
   }  
+}
+
+function postPassFilter(post){
+  var rep = getReputation(post.author_reputation);
+  var json_metadata = JSON.parse(post.json_metadata);
+  var tags = [];
+  if(typeof json_metadata.tags != 'undefined') tags = json_metadata.tags;
+  //var images = []; //TODO
+  var payout = getPayout(post);
+  var numVotes = post.active_votes.length;
+  var votes = post.active_votes;
+  var numComments = parseInt(post.children);
+  var bodyLength = parseInt(post.body_length);
+  var timestamp = new Date(post.created+'Z');  
+  var payoutComment = rshares2sbd(post.children_abs_rshares - post.abs_rshares)/numComments;
+  
+  if(rep >= MIN_REP && rep <= MAX_REP &&
+     payout >= MIN_PAYOUT && payout <= MAX_PAYOUT &&
+     //payoutComment >= MIN_PAYOUTCOMMENT && payoutComment <= MAX_PAYOUTCOMMENT &&
+     numVotes >= MIN_VOTES && numVotes <= MAX_VOTES &&
+     numComments >= MIN_COMMENTS && numComments <= MAX_COMMENTS &&
+     bodyLength >= MIN_BODYLENGTH && bodyLength <= MAX_BODYLENGTH &&
+     timestamp >= MIN_TIMESTAMP && timestamp <= MAX_TIMESTAMP &&
+     
+     (TAGS_ALLOWED.length == 0 || (TAGS_ALLOWED.length > 0 && typeof TAGS_ALLOWED.find(function(t){for(var i=0;i<tags.length;i++) if(tags[i] == t) return true; return false;}) !== 'undefined')) &&
+     
+     (TAGS_AVOIDED.length == 0 || (TAGS_AVOIDED.length > 0 && typeof TAGS_AVOIDED.find(function(t){for(var i=0;i<tags.length;i++) if(tags[i] == t) return true; return false;}) === 'undefined')) &&
+     
+     (VOTES_ALLOWED.length == 0 || (VOTES_ALLOWED.length > 0 && typeof VOTES_ALLOWED.find(function(v){for(var i=0;i<votes.length;i++) if(votes[i].voter == v) return true; return false;}) !== 'undefined')) &&
+     
+     (VOTES_AVOIDED.length == 0 || (VOTES_AVOIDED.length > 0 && typeof VOTES_AVOIDED.find(function(v){for(var i=0;i<votes.length;i++) if(votes[i].voter == v) return true; return false;}) === 'undefined')) 
+     
+     ){
+     
+     return true;
+   
+   }else{
+     
+     return false;
+   
+   }  
 }
 
 function checkTime(){
@@ -223,7 +324,7 @@ function postHtml(post){
     '        <div class="row post_content">'+getContentText(post.body).substring(0,100)+
     '        ...</div>'+
     '      </div>'+
-    '      <div class="col-sm-1 col-xs-4">$'+getPayout(post)+'</div>'+
+    '      <div class="col-sm-1 col-xs-4">$'+getPayout(post).toFixed(2)+'</div>'+
     '      <div class="col-sm-1 col-xs-4">'+UPVOTES_SVG+'<span class="align-image">'+post.active_votes.length+'</span></div>'+
     '      <div class="col-sm-1 col-xs-4">'+REPLIES_SVG+'<span class="align-image">'+post.children+'</span></div>'+
     '    </div>'+
@@ -253,6 +354,42 @@ function getQuery(){
           };
           accounts.push(acc);
         }
+      }else if(x[0] == 'minrep'){
+        MIN_REP = x[1];
+      }else if(x[0] == 'maxrep'){
+        MAX_REP = x[1];
+      }else if(x[0] == 'minpayout'){
+        MIN_PAYOUT = x[1];
+      }else if(x[0] == 'maxpayout'){
+        MAX_PAYOUT = x[1];
+      }else if(x[0] == 'minpayoutcomment'){
+        MIN_PAYOUTCOMMENT = x[1];
+      }else if(x[0] == 'maxpayoutcomment'){
+        MAX_PAYOUTCOMMENT = x[1];
+      }else if(x[0] == 'minvotes'){
+        MIN_VOTES = x[1];
+      }else if(x[0] == 'maxvotes'){
+        MAX_VOTES = x[1];
+      }else if(x[0] == 'mincomments'){
+        MIN_COMMENTS = x[1];
+      }else if(x[0] == 'maxcomments'){
+        MAX_COMMENTS = x[1];
+      }else if(x[0] == 'minbodylength'){
+        MIN_BODYLENGTH = x[1];
+      }else if(x[0] == 'maxbodylength'){
+        MAX_BODYLENGTH = x[1];
+      }else if(x[0] == 'mintimestamp'){
+        MIN_TIMESTAMP = x[1];
+      }else if(x[0] == 'maxtimestamp'){
+        MAX_TIMESTAMP = x[1];
+      }else if(x[0] == 'tagsallowed'){
+        TAGS_ALLOWED = x[1].split(',');
+      }else if(x[0] == 'tagsavoided'){
+        TAGS_AVOIDED = x[1].split(',');
+      }else if(x[0] == 'votesallowed'){
+        VOTES_ALLOWED = x[1].split(',');
+      }else if(x[0] == 'votesavoided'){
+        VOTES_AVOIDED = x[1].split(',');
       }
     }
   }  
@@ -266,3 +403,6 @@ function setApiNode(){
   return true;
 }
 
+function rshares2sbd(rs){
+  return rs*(reward_balance/recent_claims)*steem_price;
+}

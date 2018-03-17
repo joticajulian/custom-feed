@@ -26,6 +26,13 @@ function getContentText(co){
   return co;
 }
 
+function getContentHtml(co){
+  converter = new showdown.Converter();
+  try{co=converter.makeHtml(co);}catch(err){}
+  //TODO: links alone --> put in <a> or <img> for images, or youtube video
+  return co;
+}
+
 function extractUrlProfileImage(account){
   var json_metadata = JSON.parse(account.json_metadata);
   if(typeof json_metadata.profile !== 'undefined' && typeof json_metadata.profile.profile_image !== 'undefined' ){
@@ -41,8 +48,8 @@ function extractUrlProfileImage(account){
 function getPayout(post){
   var pending = parseFloat(post.pending_payout_value);
   var payout = parseFloat(post.total_payout_value);
-  if(pending > payout) return pending.toFixed(2);
-  return payout.toFixed(2);
+  if(pending > payout) return pending;
+  return payout;
 }
 
 var UPVOTES_SVG = '<span class="Icon chevron-up-circle Icon_1x" style="display: inline-block; width: 1.12rem; height: 1.12rem;"><svg enable-background="new 0 0 33 33" version="1.1" viewBox="0 0 33 33" xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><g id="Chevron_Up_Circle"><circle cx="16" cy="16" r="15" stroke="#121313" fill="none"></circle><path d="M16.699,11.293c-0.384-0.38-1.044-0.381-1.429,0l-6.999,6.899c-0.394,0.391-0.394,1.024,0,1.414 c0.395,0.391,1.034,0.391,1.429,0l6.285-6.195l6.285,6.196c0.394,0.391,1.034,0.391,1.429,0c0.394-0.391,0.394-1.024,0-1.414 L16.699,11.293z" fill="#121313"></path></g></svg></span>';

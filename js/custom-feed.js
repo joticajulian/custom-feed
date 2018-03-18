@@ -161,6 +161,14 @@ function getFeed(){
       var i=1;
       if(firstTime) i=0;
       while(i<result.length){
+        account.name
+        
+        //look if this post is a resteem or not
+        if(result[i].author != account.name && typeof result[i].reblogged_by.find(function(a){return a == result[i].author}) === 'undefined'){
+          result[i].reblogged_by.push(account.name);
+        }
+        
+        //add post to the list if passes filter
         if(typeof posts.find(function(p){return p.author == result[i].author && p.permlink == result[i].permlink}) === 'undefined'){
           if(postPassFilter(result[i])) posts.push(result[i]);
         }        
@@ -280,9 +288,22 @@ function postHtml(post){
     profile_image = author.profile_image;    
   }*/
   profile_image = 'https://steemitimages.com/u/'+post.author+'/avatar/small';
+  
+  divReblog = '';
+  if(post.reblogged_by.length > 0){
+    var resteemedText = '';
+    for(var i=0;i<post.reblogged_by.length;i++){
+      if(i == 0) resteemedText += post.reblogged_by[i];
+      else resteemedText += ', ' + post.reblogged_by[i];
+    }
+    divReblog = ''+
+      '  <div class="row">'+
+      '    <div class="resteem col-sm-2 col-xs-6">'+REBLOG_SVG+'<span class="align-image">'+resteemedText+' resteemed</span></div>'+
+      '  </div>';
+  }  
     
   text = ''+ 
-    '<div class="post">'+
+    '<div class="post">'+divReblog+
     '  <div class="row">'+
     '    <div class="user_name col-sm-6 col-xs-6">'+
     '      <span class="profile_image">'+

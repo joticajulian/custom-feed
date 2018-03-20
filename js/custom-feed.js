@@ -33,6 +33,7 @@ var TAGS_ALLOWED = [];
 var TAGS_AVOIDED = [];
 var VOTES_ALLOWED = [];
 var VOTES_AVOIDED = [];
+var expirationTime = 10;
 
 now = new Date();
 var rpc_nodes = [
@@ -49,6 +50,8 @@ var id_rpc_node = 0;
 
 $(function () {
   $('#changing-node').hide();
+  $('#error-loading').hide();
+  $('#loading-more').hide();
   setApiNode();  
   getQuery();
   initConnectionSteemApi();
@@ -124,8 +127,10 @@ function getFeed(){
     steem.api.getDiscussionsByBlog(query, function(err, result){
       if(actual_node != id_rpc_node) return;
       
-      numResponses++;      
+      numResponses++;    
       rpc_nodes[actual_node].timeLastResponse = new Date();
+      var postsPassedFilter = 0;
+      
       if (err || !result){
         console.log('Error loading account feed: ' + err);
         if(numResponses < accounts.length) return;
@@ -150,18 +155,18 @@ function getFeed(){
       if(result.length > 0){
         var end = false;
         if(result.length == 1) end = true;
-        lastPost = {
+        var lastPost = {
           author:result[result.length-1].author,
           permlink:result[result.length-1].permlink,
+          created:new Date(result[result.length-1].created+'Z'),
           end:end
-        };
+        };        
       }
       accounts.find(function(a){return a.name == account.name}).last = lastPost;
       
       var i=1;
       if(firstTime) i=0;
       while(i<result.length){
-        account.name
         
         //look if this post is a resteem or not
         if(result[i].author != account.name && typeof result[i].reblogged_by.find(function(a){return a == result[i].author}) === 'undefined'){
@@ -170,7 +175,10 @@ function getFeed(){
         
         //add post to the list if passes filter
         if(typeof posts.find(function(p){return p.author == result[i].author && p.permlink == result[i].permlink}) === 'undefined'){
-          if(postPassFilter(result[i])) posts.push(result[i]);
+          if(postPassFilter(result[i])){
+            posts.push(result[i]);
+            postsPassedFilter++;
+          }
         }        
         /*if(typeof author_names.find(function(a){return a==result[i].author}) === 'undefined'){
           author_names.push(result[i].author);  
@@ -207,12 +215,23 @@ function getFeed(){
         $('#changing-node').hide();
         firstTime = false;
         runningGetFeed = false;
-        console.log("Posts loaded");
+        
+        if(postsPassedFilter > 0){
+          console.log(postsPassedFilter + " posts loaded");
+          $('#loading-more').hide();
+          if($(window).height() >= $(document).height()) getFeed();          
+        }else{
+          var creationLastPostShowed = new Date('2016-01-01');
+          for(var i=0;i<accounts.length;i++) if(accounts[i].last.created > creationLastPostShowed) creationLastPostShowed = accounts[i].last.created;          
+          $('#loading-more').html('<strong>No recent posts!</strong> Looking for older posts (more than '+textTimeAgo(new Date() - creationLastPostShowed)+'). Please wait.').show();
+          getFeed();
+        }
       }
     });
   });
   if(endFeed){
-    runningGetFeed = false;  
+    runningGetFeed = false;
+    $('#loading-more').html('<strong>End</strong>. No more posts to show').show();
     console.log("No more posts to show");
   }  
 }
@@ -261,7 +280,7 @@ function postPassFilter(post){
 function checkTime(){
   if(!runningGetFeed) return;
   var t = rpc_nodes[id_rpc_node].timeLastResponse;
-  if(new Date() - t > 10000){
+  if(new Date() - t > expirationTime*1000){
     console.log("Time expired: aborted");
     id_rpc_node++;
     if(id_rpc_node == rpc_nodes.length) id_rpc_node = 0;
@@ -376,41 +395,43 @@ function getQuery(){
           accounts.push(acc);
         }
       }else if(x[0] == 'minrep'){
-        MIN_REP = x[1];
+        MIN_REP = parseFloat(x[1]);
       }else if(x[0] == 'maxrep'){
-        MAX_REP = x[1];
+        MAX_REP = parseFloat(x[1]);
       }else if(x[0] == 'minpayout'){
-        MIN_PAYOUT = x[1];
+        MIN_PAYOUT = parseFloat(x[1]);
       }else if(x[0] == 'maxpayout'){
-        MAX_PAYOUT = x[1];
+        MAX_PAYOUT = parseFloat(x[1]);
       }else if(x[0] == 'minpayoutcomment'){
-        MIN_PAYOUTCOMMENT = x[1];
+        MIN_PAYOUTCOMMENT = parseFloat(x[1]);
       }else if(x[0] == 'maxpayoutcomment'){
-        MAX_PAYOUTCOMMENT = x[1];
+        MAX_PAYOUTCOMMENT = parseFloat(x[1]);
       }else if(x[0] == 'minvotes'){
-        MIN_VOTES = x[1];
+        MIN_VOTES = parseInt(x[1]);
       }else if(x[0] == 'maxvotes'){
-        MAX_VOTES = x[1];
+        MAX_VOTES = parseInt(x[1]);
       }else if(x[0] == 'mincomments'){
-        MIN_COMMENTS = x[1];
+        MIN_COMMENTS = parseInt(x[1]);
       }else if(x[0] == 'maxcomments'){
-        MAX_COMMENTS = x[1];
-      }else if(x[0] == 'minbodylength'){
-        MIN_BODYLENGTH = x[1];
-      }else if(x[0] == 'maxbodylength'){
-        MAX_BODYLENGTH = x[1];
-      }else if(x[0] == 'mintimestamp'){
-        MIN_TIMESTAMP = x[1];
-      }else if(x[0] == 'maxtimestamp'){
-        MAX_TIMESTAMP = x[1];
-      }else if(x[0] == 'tagsallowed'){
+        MAX_COMMENTS = parseInt(x[1]);
+      }else if(x[0] == 'minbody'){
+        MIN_BODYLENGTH = parseInt(x[1]);
+      }else if(x[0] == 'maxbody'){
+        MAX_BODYLENGTH = parseInt(x[1]);
+      }else if(x[0] == 'mintime'){
+        MIN_TIMESTAMP = new Date(x[1]+'Z');//Todo: revisar GMT offset
+      }else if(x[0] == 'maxtime'){
+        MAX_TIMESTAMP = new Date(x[1]+'Z');
+      }else if(x[0] == 'tags'){
         TAGS_ALLOWED = x[1].split(',');
-      }else if(x[0] == 'tagsavoided'){
+      }else if(x[0] == 'notags'){
         TAGS_AVOIDED = x[1].split(',');
-      }else if(x[0] == 'votesallowed'){
+      }else if(x[0] == 'votes'){
         VOTES_ALLOWED = x[1].split(',');
-      }else if(x[0] == 'votesavoided'){
+      }else if(x[0] == 'novotes'){
         VOTES_AVOIDED = x[1].split(',');
+      }else if(x[0] == 'expirationtime'){
+        expirationTime = parseFloat(x[1]);
       }
     }
   }  

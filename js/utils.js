@@ -4,6 +4,10 @@ function getReputation(reputation){
 
 function getTimestamp(created){
   t = new Date() - new Date(created+'Z');
+  return textTimeAgo(t);
+}
+
+function textTimeAgo(t){  
   if(t <= 1000) return '1 second ago';
   if(t < 60*1000) return (t/1000).toFixed(0) + ' seconds ago';
   if(t < 2*60*1000) return '1 minute ago';

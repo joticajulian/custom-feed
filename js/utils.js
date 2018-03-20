@@ -47,7 +47,7 @@ function extractUrlProfileImage(account){
 
 function getPayout(post){
   var pending = parseFloat(post.pending_payout_value);
-  var payout = parseFloat(post.total_payout_value);
+  var payout = parseFloat(post.total_payout_value)+parseFloat(post.curator_payout_value);
   if(pending > payout) return pending;
   return payout;
 }

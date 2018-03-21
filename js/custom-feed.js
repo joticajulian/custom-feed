@@ -33,6 +33,7 @@ var TAGS_ALLOWED = [];
 var TAGS_AVOIDED = [];
 var VOTES_ALLOWED = [];
 var VOTES_AVOIDED = [];
+var RESTEEM = true;
 var expirationTime = 10;
 
 now = new Date();
@@ -169,9 +170,10 @@ function getFeed(){
       while(i<result.length){
         
         //look if this post is a resteem or not
-        if(result[i].author != account.name && typeof result[i].reblogged_by.find(function(a){return a == result[i].author}) === 'undefined'){
+        /*if(result[i].author != account.name && typeof result[i].reblogged_by.find(function(a){return a == result[i].author}) === 'undefined'){
           result[i].reblogged_by.push(account.name);
-        }
+        }*/
+        if(result[i].author != account.name) result[i].reblogged_by[0] = account.name;
         
         //add post to the list if passes filter
         if(typeof posts.find(function(p){return p.author == result[i].author && p.permlink == result[i].permlink}) === 'undefined'){
@@ -264,7 +266,9 @@ function postPassFilter(post){
      
      (VOTES_ALLOWED.length == 0 || (VOTES_ALLOWED.length > 0 && typeof VOTES_ALLOWED.find(function(v){for(var i=0;i<votes.length;i++) if(votes[i].voter == v) return true; return false;}) !== 'undefined')) &&
      
-     (VOTES_AVOIDED.length == 0 || (VOTES_AVOIDED.length > 0 && typeof VOTES_AVOIDED.find(function(v){for(var i=0;i<votes.length;i++) if(votes[i].voter == v) return true; return false;}) === 'undefined')) 
+     (VOTES_AVOIDED.length == 0 || (VOTES_AVOIDED.length > 0 && typeof VOTES_AVOIDED.find(function(v){for(var i=0;i<votes.length;i++) if(votes[i].voter == v) return true; return false;}) === 'undefined')) &&
+     
+     (RESTEEM || post.reblogged_by.length==0)
      
      ){
      
@@ -320,6 +324,10 @@ function postHtml(post){
       '    <div class="resteem col-sm-2 col-xs-6">'+REBLOG_SVG+'<span class="align-image">'+resteemedText+' resteemed</span></div>'+
       '  </div>';
   }  
+  textPayoutChildren = '';
+  if(new Date() < new Date(post.cashout_time+'Z')){
+    textPayoutChildren = ' ($'+rshares2sbd((post.children_abs_rshares-post.abs_rshares)/post.children).toFixed(2)+')';
+  }  
     
   text = ''+ 
     '<div class="post">'+divReblog+
@@ -366,7 +374,9 @@ function postHtml(post){
     '      </div>'+
     '      <div class="col-sm-1 col-xs-4">$'+getPayout(post).toFixed(2)+'</div>'+
     '      <div class="col-sm-1 col-xs-4">'+UPVOTES_SVG+'<span class="align-image">'+post.active_votes.length+'</span></div>'+
-    '      <div class="col-sm-1 col-xs-4">'+REPLIES_SVG+'<span class="align-image">'+post.children+'</span></div>'+
+    '      <div class="col-sm-2 col-xs-4">'+REPLIES_SVG+
+    '        <span class="align-image">'+post.children+textPayoutChildren+'</span>'+
+    '      </div>'+
     '    </div>'+
     '  </div>'+
     '</div>';    /*console.log(text);*/ return text; 
@@ -432,6 +442,8 @@ function getQuery(){
         VOTES_AVOIDED = x[1].split(',');
       }else if(x[0] == 'expirationtime'){
         expirationTime = parseFloat(x[1]);
+      }else if(x[0] == 'resteem'){
+        RESTEEM = (x[1] == 'true');
       }
     }
   }  

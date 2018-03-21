@@ -1,5 +1,7 @@
 function getReputation(reputation){
-  return Math.floor(9*Math.log10(parseInt(reputation))-56);
+  rep = parseInt(reputation);
+  if(rep >= 0) return Math.floor(9*Math.log10(rep)-56);
+  else return Math.ceil(106-9*Math.log10(-rep));
 }
 
 function getTimestamp(created){

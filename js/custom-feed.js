@@ -1,12 +1,12 @@
 var limit = 10;
-var accounts = [];
+var querys = [];
+var typeGetDiscussions = 'trending';
 var posts = [];
 //var author_names = [];
 //var author_profiles = [];
 //var no_profile_image = 'https://steemit-production-imageproxy-thumbnail.s3.amazonaws.com/U5ds8wePoj1V1DoRR4bzzKUARNiywjp_64x64';
 var explorer = "https://steemit.com";
 var firstTime = true;
-var idLastPostShowed = -1;
 var runningGetFeed = false;
 
 var steem_price = 0;
@@ -53,6 +53,7 @@ $(function () {
   $('#changing-node').hide();
   $('#error-loading').hide();
   $('#loading-more').hide();
+  $('.loader').hide();
   setApiNode();  
   getQuery();
   initConnectionSteemApi();
@@ -109,32 +110,82 @@ function getFeed(){
   var actual_node = id_rpc_node;
   rpc_nodes[actual_node].timeLastResponse = new Date();    
   
-  if(accounts.length == 0) console.log("No accounts");
+  if(querys.length == 0 && typeGetDiscussions != 'blog' && typeGetDiscussions != 'feed'){
+    querys.push({
+      tag:'',
+      last:{
+        author:'',
+        permlink:'',
+        end:false
+      }
+    });
+  }
+  
   var numResponses = 0;  
   $('#error-loading').hide();
   
-  accounts.forEach(function(account){
-    if(account.last.end) return;
+  querys.forEach(function(query){
+    if(query.last.end) return;
     endFeed = false;
     
     $('.loader').show();    
-    var query = {
+    var q = {
       limit:limit,
-      tag:account.name,
-      start_author:account.last.author,
-      start_permlink:account.last.permlink
+      tag:query.tag
     };
+    if(query.last.author != ''){
+      q.start_author = query.last.author;
+      q.start_permlink = query.last.permlink;
+    } 
+
+    switch(typeGetDiscussions){
+      case 'trending':
+        steem.api.getDiscussionsByTrending(q,function(err, result){
+          numResponses = resolveResponse('trending',err,result,actual_node,query,numResponses);
+        });
+        break;
+      case 'created':
+        steem.api.getDiscussionsByCreated(q,function(err, result){
+          numResponses = resolveResponse('created',err,result,actual_node,query,numResponses);
+        });
+        break;
+      case 'hot':
+        steem.api.getDiscussionsByHot(q,function(err, result){
+          numResponses = resolveResponse('hot',err,result,actual_node,query,numResponses);
+        });
+        break;
+      case 'feed':
+        steem.api.getDiscussionsByFeed(q,function(err, result){
+          numResponses = resolveResponse('feed',err,result,actual_node,query,numResponses);
+        });
+        break;
+      case 'blog':
+        steem.api.getDiscussionsByBlog(q,function(err, result){
+          numResponses = resolveResponse('blog',err,result,actual_node,query,numResponses);
+        });
+        break;
+      default:
+        $('#error-loading').html('Please select a type (trending, created, hot, feed, blog)').show();
+    }
+  });
+  
+  if(endFeed){
+    runningGetFeed = false;
+    $('#loading-more').html('<strong>End</strong>. No more posts to show').show();
+    console.log("No more posts to show");
+  }  
+}
     
-    steem.api.getDiscussionsByBlog(query, function(err, result){
+function resolveResponse(queryType,err, result,actual_node,query,numResponses){
       if(actual_node != id_rpc_node) return;
       
-      numResponses++;    
+      numResponses++;             
       rpc_nodes[actual_node].timeLastResponse = new Date();
       var postsPassedFilter = 0;
-      
+            
       if (err || !result){
-        console.log('Error loading account feed: ' + err);
-        if(numResponses < accounts.length) return;
+        console.log('Error loading query feed: ' + err);
+        if(numResponses < querys.length) return;
         
         id_rpc_node++;
         if(id_rpc_node < rpc_nodes.length){
@@ -161,19 +212,16 @@ function getFeed(){
           permlink:result[result.length-1].permlink,
           created:new Date(result[result.length-1].created+'Z'),
           end:end
-        };        
+        };
       }
-      accounts.find(function(a){return a.name == account.name}).last = lastPost;
+      querys.find(function(q){return q.tag == query.tag}).last = lastPost;
       
       var i=1;
       if(firstTime) i=0;
       while(i<result.length){
         
         //look if this post is a resteem or not
-        /*if(result[i].author != account.name && typeof result[i].reblogged_by.find(function(a){return a == result[i].author}) === 'undefined'){
-          result[i].reblogged_by.push(account.name);
-        }*/
-        if(result[i].author != account.name) result[i].reblogged_by[0] = account.name;
+        if(queryType == 'blog' && result[i].author != query.tag) result[i].reblogged_by[0] = query.tag;
         
         //add post to the list if passes filter
         if(typeof posts.find(function(p){return p.author == result[i].author && p.permlink == result[i].permlink}) === 'undefined'){
@@ -182,23 +230,10 @@ function getFeed(){
             postsPassedFilter++;
           }
         }        
-        /*if(typeof author_names.find(function(a){return a==result[i].author}) === 'undefined'){
-          author_names.push(result[i].author);  
-        }*/
         i++;
       }
       
-      if(numResponses == accounts.length){
-        /*steem.api.getAccounts(author_names, function(err, result){
-          if (err || !result){
-            console.log('Error loading profile pictures: ' + err);            
-          }else{
-            for(var i=0;i<result.length;i++){
-              result[i].profile_image = extractUrlProfileImage(result[i]);
-              author_profiles.push(result[i]);
-            }  
-          }       
-        });*/
+      if(numResponses == querys.length){
         posts.sort(function(a,b){
           dateA = new Date(a.created+'Z');
           dateB = new Date(b.created+'Z');
@@ -207,10 +242,10 @@ function getFeed(){
           return 0;
         });
         
-        for(var i=idLastPostShowed+1;i<posts.length;i++){          
-          if(typeof accounts.find(function(a){return a.last.author == posts[i].author && a.last.permlink == posts[i].permlink&& a.last.end==false}) !== 'undefined') break;
-          $('#post_list').append(postHtml(posts[i]));
-          idLastPostShowed = i;
+        $('#post_list').text('');
+        for(var i=0;i<posts.length;i++){
+          if(typeof querys.find(function(q){return q.last.author == posts[i].author && q.last.permlink == posts[i].permlink && q.last.end==false}) !== 'undefined') break;
+          $('#post_list').append(postHtml(posts[i]));                    
         }
         //if(firstTime) $('#post-data').html(getContentHtml(posts[0].body));
         $('.loader').hide();
@@ -224,19 +259,15 @@ function getFeed(){
           if($(window).height() >= $(document).height()) getFeed();          
         }else{
           var creationLastPostShowed = new Date('2016-01-01');
-          for(var i=0;i<accounts.length;i++) if(accounts[i].last.created > creationLastPostShowed) creationLastPostShowed = accounts[i].last.created;          
+          for(var i=0;i<querys.length;i++) if(querys[i].last.created > creationLastPostShowed) creationLastPostShowed = querys[i].last.created;          
           $('#loading-more').html('<strong>No recent posts!</strong> Looking for older posts (more than '+textTimeAgo(new Date() - creationLastPostShowed)+'). Please wait.').show();
           getFeed();
         }
       }
-    });
-  });
-  if(endFeed){
-    runningGetFeed = false;
-    $('#loading-more').html('<strong>End</strong>. No more posts to show').show();
-    console.log("No more posts to show");
-  }  
-}
+      return numResponses;
+    }
+   
+  
 
 function postPassFilter(post){
   var rep = getReputation(post.author_reputation);
@@ -249,12 +280,13 @@ function postPassFilter(post){
   var votes = post.active_votes;
   var numComments = parseInt(post.children);
   var bodyLength = parseInt(post.body_length);
-  var timestamp = new Date(post.created+'Z');  
-  var payoutComment = rshares2sbd(post.children_abs_rshares - post.abs_rshares)/numComments;
+  var timestamp = new Date(post.created+'Z');
+  var payoutComment = 0;
+  if(numComments > 0) payoutComment = rshares2sbd(post.children_abs_rshares - post.abs_rshares)/numComments;
   
   if(rep >= MIN_REP && rep <= MAX_REP &&
      payout >= MIN_PAYOUT && payout <= MAX_PAYOUT &&
-     //payoutComment >= MIN_PAYOUTCOMMENT && payoutComment <= MAX_PAYOUTCOMMENT &&
+     payoutComment >= MIN_PAYOUTCOMMENT && payoutComment <= MAX_PAYOUTCOMMENT &&
      numVotes >= MIN_VOTES && numVotes <= MAX_VOTES &&
      numComments >= MIN_COMMENTS && numComments <= MAX_COMMENTS &&
      bodyLength >= MIN_BODYLENGTH && bodyLength <= MAX_BODYLENGTH &&
@@ -305,11 +337,6 @@ function postHtml(post){
     else url_image = json_metadata.thumbnail;
   }else url_image = json_metadata.image[0];
   
-  /*profile_image = no_profile_image;
-  author = author_profiles.find(function(a){return a.name==post.author});  
-  if(typeof author !== 'undefined'){
-    profile_image = author.profile_image;    
-  }*/
   profile_image = 'https://steemitimages.com/u/'+post.author+'/avatar/small';
   
   divReblog = '';
@@ -326,7 +353,10 @@ function postHtml(post){
   }  
   textPayoutChildren = '';
   if(new Date() < new Date(post.cashout_time+'Z')){
-    textPayoutChildren = ' ($'+rshares2sbd((post.children_abs_rshares-post.abs_rshares)/post.children).toFixed(2)+')';
+    textPayoutChildren = ' ($0.00)';
+    if(parseInt(post.children) > 0){
+      textPayoutChildren = ' ($'+rshares2sbd((post.children_abs_rshares-post.abs_rshares)/post.children).toFixed(2)+')';
+    }
   }  
     
   text = ''+ 
@@ -390,19 +420,22 @@ function getQuery(){
     var i = kvp.length; 	
     while (i--) {
       var x = kvp[i].split('=');
-      if (x[0] == 'accounts'){
-        names = x[1].split(',');
-        accounts = [];
-        for (var j=0;j<names.length;j++){
-          var acc = {
-            name:names[j],
+      if (x.length == 1) x.push('');
+      if (x[0] == 'type'){
+        typeGetDiscussions = x[1];
+      }else if (x[0] == 'query'){
+        var tags = x[1].split(',');
+        querys = [];
+        for (var j=0;j<tags.length;j++){
+          var q = {
+            tag:tags[j],
             last:{
               author:'',
               permlink:'',
               end:false
             }
           };
-          accounts.push(acc);
+          querys.push(q);
         }
       }else if(x[0] == 'minrep'){
         MIN_REP = parseFloat(x[1]);

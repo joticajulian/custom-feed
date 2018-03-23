@@ -176,6 +176,8 @@ function getFeed(){
         break;      
       default:
         $('#error-loading').html('Please select a type (trending, created, hot, feed, blog)').show();
+        $('.loader').hide();            
+        endFeed = true;
     }
   });
   
@@ -607,6 +609,8 @@ function getQuery(){
         expirationTime = parseFloat(x[1]);
       }else if(x[0] == 'resteem'){
         RESTEEM = (x[1] == 'true');
+      }else if(x[0] == 'olderthan'){
+        MAX_TIMESTAMP = new Date()-x[1]*1000*60;
       }
     }
   }  

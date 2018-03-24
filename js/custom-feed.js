@@ -53,6 +53,24 @@ var rpc_nodes = [
 ];
 var id_rpc_node = 0;
 
+$('#selType').change(function(){
+  var t = this.value;
+  switch(t){
+    case '1':
+    case '2':
+    case '3': 
+      $('#label-query').text('Tags:'); 
+      $('#query').attr('placeholder','Tags separated by commas');
+      break;
+    case '4':
+    case '5':
+    case '6': 
+      $('#label-query').text('Accounts:'); 
+      $('#query').attr('placeholder','Accounts separated by commas');
+      break;
+  }
+});
+
 $(function () {
   $('#changing-node').hide();
   $('#error-loading').hide();
@@ -76,8 +94,8 @@ function search(){
   var maxcomments = ($('#maxcomments').val()).replace(" ","");
   var minbody = ($('#minbody').val()).replace(" ","");
   var maxbody = ($('#maxbody').val()).replace(" ","");
-  var minpayoutcomments = ($('#minpayoutcomments').val()).replace(" ","");
-  var maxpayoutcomments = ($('#maxpayoutcomments').val()).replace(" ","");
+  var minpayoutcomment = ($('#minpayoutcomment').val()).replace(" ","");
+  var maxpayoutcomment = ($('#maxpayoutcomment').val()).replace(" ","");
   var tags = ($('#tags').val()).replace(" ","");
   var notags = ($('#notags').val()).replace(" ","");
   var votes = ($('#votes').val()).replace(" ","");
@@ -97,8 +115,8 @@ function search(){
   if(maxcomments != '') qq += '&'+'maxcomments='+maxcomments;
   if(minbody != '') qq += '&'+'minbody='+minbody;
   if(maxbody != '') qq += '&'+'maxbody='+maxbody;
-  if(minpayoutcomments != '') qq += '&'+'minpayoutcomments='+minpayoutcomments;
-  if(maxpayoutcomments != '') qq += '&'+'maxpayoutcomments='+maxpayoutcomments;
+  if(minpayoutcomment != '') qq += '&'+'minpayoutcomment='+minpayoutcomment;
+  if(maxpayoutcomment != '') qq += '&'+'maxpayoutcomment='+maxpayoutcomment;
   if(tags != '') qq += '&'+'tags='+tags;
   if(notags != '') qq += '&'+'notags='+notags;
   if(votes != '') qq += '&'+'votes='+votes;
@@ -593,7 +611,9 @@ function postHtml(post){
 }
 
 function toggleSearch(){
-  $('#search-block').toggle();  
+  $('#search-block').toggle();
+  if($('#toogle-search').text() == 'Hide search options') $('#toogle-search').text('Show search options');
+  else $('#toogle-search').text('Hide search options');
 }
 
 function getQuery(){
@@ -640,10 +660,10 @@ function getQuery(){
         $('#maxpayout').val(x[1]);
         MAX_PAYOUT = parseFloat(x[1]);
       }else if(x[0] == 'minpayoutcomment'){
-        $('#minpayoutcomments').val(x[1]);
+        $('#minpayoutcomment').val(x[1]);
         MIN_PAYOUTCOMMENT = parseFloat(x[1]);
       }else if(x[0] == 'maxpayoutcomment'){
-        $('#maxpayoutcomments').val(x[1]);
+        $('#maxpayoutcomment').val(x[1]);
         MAX_PAYOUTCOMMENT = parseFloat(x[1]);
       }else if(x[0] == 'minvotes'){
         $('#minvotes').val(x[1]);

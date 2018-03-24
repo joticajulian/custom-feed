@@ -19,7 +19,7 @@
             </div>            
             <div class="row">
                 <div class="col-sm-offset-9 col-sm-2">
-                    <button type="button" id="toogle-search" class="btn btn-default" onclick="toggleSearch()">Show/Hide search options</button>
+                    <button type="button" id="toogle-search" class="btn btn-default" onclick="toggleSearch()">Hide search options</button>
                 </div>                    
                 <div class="col-sm-12 col-xs-12" id="search-block">
                     <div class="col-sm-12 col-xs-12"><hr></div>
@@ -41,7 +41,7 @@
                             <div class="col-sm-6"></div>
                         </div>
                         <div class="form-group">
-                            <label class="control-label col-sm-2" for="query">Tags:</label>
+                            <label class="control-label col-sm-2" for="query" id="label-query">Tags:</label>
                             <div class="col-sm-3">
                                 <input type="text" class="form-control" id="query" placeholder="Tags separated by commas">
                             </div>
@@ -99,13 +99,13 @@
                             </div>
                         </div>
                         <div class="form-group">
-                            <label class="control-label col-sm-2" for="minpayoutcomments">Min comment payout:</label>
+                            <label class="control-label col-sm-2" for="minpayoutcomment">Min comment payout:</label>
                             <div class="col-sm-3">
-                                <input type="text" class="form-control" id="minpayoutcomments">
+                                <input type="text" class="form-control" id="minpayoutcomment">
                             </div>
-                            <label class="control-label col-sm-2" for="maxpayoutcomments">Max comment payout:</label>
+                            <label class="control-label col-sm-2" for="maxpayoutcomment">Max comment payout:</label>
                             <div class="col-sm-3">
-                                <input type="text" class="form-control" id="maxpayoutcomments">
+                                <input type="text" class="form-control" id="maxpayoutcomment">
                             </div>
                         </div>
                         <div class="col-sm-12 col-xs-12"><hr></div>
@@ -169,5 +169,5 @@
         </div>		
 	</body>
     <script src="./js/utils.js?1"></script>
-	<script src="./js/custom-feed.js?2"></script>        
+	<script src="./js/custom-feed.js?3"></script>        
 </html>

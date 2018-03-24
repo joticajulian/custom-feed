@@ -63,6 +63,55 @@ $(function () {
   initConnectionSteemApi();
 });
 
+function search(){
+  var options = {'1':'trending','2':'created','3':'hot','4':'feed','5':'blog','6':'votes'};
+  var type = options[$('#selType').val()];
+  var q = ($('#query').val()).replace(" ","");
+  var minrep = ($('#minrep').val()).replace(" ","");
+  var maxrep = ($('#maxrep').val()).replace(" ","");
+  var minpayout = ($('#minpayout').val()).replace(" ","");
+  var maxpayout = ($('#maxpayout').val()).replace(" ","");
+  var minvotes = ($('#minvotes').val()).replace(" ","");
+  var maxvotes = ($('#maxvotes').val()).replace(" ","");
+  var mincomments = ($('#mincomments').val()).replace(" ","");
+  var maxcomments = ($('#maxcomments').val()).replace(" ","");
+  var minbody = ($('#minbody').val()).replace(" ","");
+  var maxbody = ($('#maxbody').val()).replace(" ","");
+  var minpayoutcomments = ($('#minpayoutcomments').val()).replace(" ","");
+  var maxpayoutcomments = ($('#maxpayoutcomments').val()).replace(" ","");
+  var tags = ($('#tags').val()).replace(" ","");
+  var notags = ($('#notags').val()).replace(" ","");
+  var votes = ($('#votes').val()).replace(" ","");
+  var novotes = ($('#novotes').val()).replace(" ","");
+  var resteem = $('#resteem').is(':checked')?'true':'false'; 
+  var olderthan = ($('#olderthan').val()).replace(" ","");
+  
+  qq = '?type='+type;  
+  if(q != '') qq += '&'+'query='+q;
+  if(minrep != '') qq += '&'+'minrep='+minrep;
+  if(maxrep != '') qq += '&'+'maxrep='+maxrep;
+  if(minpayout != '') qq += '&'+'minpayout='+minpayout;
+  if(maxpayout != '') qq += '&'+'maxpayout='+maxpayout;
+  if(minvotes != '') qq += '&'+'minvotes='+minvotes;
+  if(maxvotes != '') qq += '&'+'maxvotes='+maxvotes;
+  if(mincomments != '') qq += '&'+'mincomments='+mincomments;
+  if(maxcomments != '') qq += '&'+'maxcomments='+maxcomments;
+  if(minbody != '') qq += '&'+'minbody='+minbody;
+  if(maxbody != '') qq += '&'+'maxbody='+maxbody;
+  if(minpayoutcomments != '') qq += '&'+'minpayoutcomments='+minpayoutcomments;
+  if(maxpayoutcomments != '') qq += '&'+'maxpayoutcomments='+maxpayoutcomments;
+  if(tags != '') qq += '&'+'tags='+tags;
+  if(notags != '') qq += '&'+'notags='+notags;
+  if(votes != '') qq += '&'+'votes='+votes;
+  if(novotes != '') qq += '&'+'novotes='+novotes;
+  if(resteem == 'false') qq += '&'+'resteem='+resteem;
+  if(olderthan != '') qq += '&'+'olderthan='+olderthan;  
+  
+  var url = "https://joticajulian.github.io/custom-feed/index.html"+qq;
+  console.log("opening: "+url);
+  window.open(url, "_self");
+}
+
 function handleErrorPrice(err){
   console.log("Error loading the price data: "+err);
   id_rpc_node++;
@@ -545,7 +594,30 @@ function postHtml(post){
 
 
 function getQuery(){
-  var kvp = document.location.search.substr(1).split('&');	
+  var kvp = document.location.search.substr(1).split('&');
+  var options = {'trending':'1','created':'2','hot':'3','feed':'4','blog':'5','votes':'6'};
+  var type = options[];
+  var q = ().replace(" ","");
+  var minrep = ($('#minrep').val()).replace(" ","");
+  var maxrep = ($('#maxrep').val()).replace(" ","");
+  var minpayout = ($('#minpayout').val()).replace(" ","");
+  var maxpayout = ($('#maxpayout').val()).replace(" ","");
+  var minvotes = ($('#minvotes').val()).replace(" ","");
+  var maxvotes = ($('#maxvotes').val()).replace(" ","");
+  var mincomments = ($('#mincomments').val()).replace(" ","");
+  var maxcomments = ($('#maxcomments').val()).replace(" ","");
+  var minbody = ($('#minbody').val()).replace(" ","");
+  var maxbody = ($('#maxbody').val()).replace(" ","");
+  var minpayoutcomments = ($('#minpayoutcomments').val()).replace(" ","");
+  var maxpayoutcomments = ($('#maxpayoutcomments').val()).replace(" ","");
+  var tags = ($('#tags').val()).replace(" ","");
+  var notags = ($('#notags').val()).replace(" ","");
+  var votes = ($('#votes').val()).replace(" ","");
+  var novotes = ($('#novotes').val()).replace(" ","");
+  var resteem = $('#resteem').is(':checked')?'true':'false'; 
+  var olderthan = ($('#olderthan').val()).replace(" ","");
+  
+  
   
   if(kvp != ''){
     var i = kvp.length; 	
@@ -554,7 +626,9 @@ function getQuery(){
       if (x.length == 1) x.push('');
       if (x[0] == 'type'){
         typeGetDiscussions = x[1];
+        $('#selType').val(options[x[1]]);
       }else if (x[0] == 'query'){
+        $('#query').val(x[1]);
         var tags = x[1].split(',');
         querys = [];
         for (var j=0;j<tags.length;j++){
@@ -570,46 +644,64 @@ function getQuery(){
           querys.push(q);
         }
       }else if(x[0] == 'minrep'){
+        $('#minrep').val(x[1]);
         MIN_REP = parseFloat(x[1]);
       }else if(x[0] == 'maxrep'){
+        $('#maxrep').val(x[1]);
         MAX_REP = parseFloat(x[1]);
       }else if(x[0] == 'minpayout'){
+        $('#minpayout').val(x[1]);
         MIN_PAYOUT = parseFloat(x[1]);
       }else if(x[0] == 'maxpayout'){
+        $('#maxpayout').val(x[1]);
         MAX_PAYOUT = parseFloat(x[1]);
       }else if(x[0] == 'minpayoutcomment'){
+        $('#minpayoutcomments').val(x[1]);
         MIN_PAYOUTCOMMENT = parseFloat(x[1]);
       }else if(x[0] == 'maxpayoutcomment'){
+        $('#maxpayoutcomments').val(x[1]);
         MAX_PAYOUTCOMMENT = parseFloat(x[1]);
       }else if(x[0] == 'minvotes'){
+        $('#minvotes').val(x[1]);
         MIN_VOTES = parseInt(x[1]);
       }else if(x[0] == 'maxvotes'){
+        $('#maxvotes').val(x[1]);
         MAX_VOTES = parseInt(x[1]);
       }else if(x[0] == 'mincomments'){
+        $('#mincomments').val(x[1]);
         MIN_COMMENTS = parseInt(x[1]);
       }else if(x[0] == 'maxcomments'){
+        $('#maxcomments').val(x[1]);
         MAX_COMMENTS = parseInt(x[1]);
       }else if(x[0] == 'minbody'){
+        $('#minbody').val(x[1]);
         MIN_BODYLENGTH = parseInt(x[1]);
       }else if(x[0] == 'maxbody'){
+        $('#maxbody').val(x[1]);
         MAX_BODYLENGTH = parseInt(x[1]);
       }else if(x[0] == 'mintime'){
         MIN_TIMESTAMP = new Date(x[1]+'Z');//Todo: revisar GMT offset
       }else if(x[0] == 'maxtime'){
         MAX_TIMESTAMP = new Date(x[1]+'Z');
       }else if(x[0] == 'tags'){
+        $('#tags').val(x[1]);
         TAGS_ALLOWED = x[1].split(',');
       }else if(x[0] == 'notags'){
+        $('#notags').val(x[1]);
         TAGS_AVOIDED = x[1].split(',');
       }else if(x[0] == 'votes'){
+        $('#votes').val(x[1]);
         VOTES_ALLOWED = x[1].split(',');
       }else if(x[0] == 'novotes'){
+        $('#novotes').val(x[1]);
         VOTES_AVOIDED = x[1].split(',');
       }else if(x[0] == 'expirationtime'){
         expirationTime = parseFloat(x[1]);
       }else if(x[0] == 'resteem'){
+        $('#resteem').prop('checked', x[1]=='true');
         RESTEEM = (x[1] == 'true');
       }else if(x[0] == 'olderthan'){
+        $('#olderthan').val(x[1]);
         MAX_TIMESTAMP = new Date()-x[1]*1000*60;
       }
     }

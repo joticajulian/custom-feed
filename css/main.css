@@ -183,13 +183,9 @@ a
     overflow: hidden;
 }
 
-.crop img {
-    awidth: 400px;
-    aheight: 300px;
-    amargin: -75px 0 0 -100px;
-}
-
 .loader {
+  margin-top: 20px;
+  margin-bottom: 20px;
   border: 2px solid #FFFFFF;  
   border-radius: 50%;
   border-top: 2px solid #06D6A9;

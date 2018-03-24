@@ -59,8 +59,7 @@ $(function () {
   $('#loading-more').hide();
   $('.loader').hide();
   setApiNode();  
-  getQuery();
-  initConnectionSteemApi();
+  if(getQuery()) initConnectionSteemApi();
 });
 
 function search(){
@@ -592,32 +591,15 @@ function postHtml(post){
     '</div>';    /*console.log(text);*/ return text; 
 }
 
+function toggleSearch(){
+  $('#search-block').toggle();  
+}
 
 function getQuery(){
+  if(typeof document.location.search == 'undefined' || document.location.search == '') return false;
+  
+  toggleSearch();  
   var kvp = document.location.search.substr(1).split('&');
-  var options = {'trending':'1','created':'2','hot':'3','feed':'4','blog':'5','votes':'6'};
-  var type = options[];
-  var q = ().replace(" ","");
-  var minrep = ($('#minrep').val()).replace(" ","");
-  var maxrep = ($('#maxrep').val()).replace(" ","");
-  var minpayout = ($('#minpayout').val()).replace(" ","");
-  var maxpayout = ($('#maxpayout').val()).replace(" ","");
-  var minvotes = ($('#minvotes').val()).replace(" ","");
-  var maxvotes = ($('#maxvotes').val()).replace(" ","");
-  var mincomments = ($('#mincomments').val()).replace(" ","");
-  var maxcomments = ($('#maxcomments').val()).replace(" ","");
-  var minbody = ($('#minbody').val()).replace(" ","");
-  var maxbody = ($('#maxbody').val()).replace(" ","");
-  var minpayoutcomments = ($('#minpayoutcomments').val()).replace(" ","");
-  var maxpayoutcomments = ($('#maxpayoutcomments').val()).replace(" ","");
-  var tags = ($('#tags').val()).replace(" ","");
-  var notags = ($('#notags').val()).replace(" ","");
-  var votes = ($('#votes').val()).replace(" ","");
-  var novotes = ($('#novotes').val()).replace(" ","");
-  var resteem = $('#resteem').is(':checked')?'true':'false'; 
-  var olderthan = ($('#olderthan').val()).replace(" ","");
-  
-  
   
   if(kvp != ''){
     var i = kvp.length; 	
@@ -626,6 +608,7 @@ function getQuery(){
       if (x.length == 1) x.push('');
       if (x[0] == 'type'){
         typeGetDiscussions = x[1];
+        var options = {'trending':'1','created':'2','hot':'3','feed':'4','blog':'5','votes':'6'};
         $('#selType').val(options[x[1]]);
       }else if (x[0] == 'query'){
         $('#query').val(x[1]);
@@ -705,7 +688,8 @@ function getQuery(){
         MAX_TIMESTAMP = new Date()-x[1]*1000*60;
       }
     }
-  }  
+  } 
+  return true;  
 }
 
 function setApiNode(){
@@ -719,3 +703,4 @@ function setApiNode(){
 function rshares2sbd(rs){
   return rs*(reward_balance/recent_claims)*steem_price;
 }
+

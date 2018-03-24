@@ -273,8 +273,9 @@ function resolveResponse(queryType,err, result,actual_node,query){
           created:new Date(result[result.length-1].created+'Z'),
           end:end
         };
+        querys.find(function(q){return q.tag == query.tag}).last = lastPost;
       }
-      querys.find(function(q){return q.tag == query.tag}).last = lastPost;
+      
       
       var i=1;
       if(firstTime) i=0;

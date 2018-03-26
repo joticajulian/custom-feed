@@ -28,7 +28,7 @@
                     <form class="form-horizontal">
                         <div class="form-group">
                             <label class="control-label col-sm-2" for="selType">Type:</label>
-                            <div class="col-sm-4">                            
+                            <div class="col-sm-3">                            
                                 <select class="form-control" id="selType">
                                     <option class="is_ml" value="1">Search by Trending</option>
                                     <option class="is_ml" value="2">Search by Created</option>
@@ -46,7 +46,14 @@
                                 <input type="text" class="form-control" id="query" placeholder="Tags separated by commas">
                             </div>
                         </div>
-                                                
+                        <div class="form-group"> 
+                            <div class="col-sm-offset-2 col-sm-10">
+                                <div class="checkbox" id="divhideresteem">
+                                    <label><input type="checkbox" id="hideresteem">Hide resteems</label>
+                                </div>
+                            </div>
+                        </div>
+                                                                        
                         <div class="col-sm-12 col-xs-12"><hr></div>
                         <div class="form-group">
                             <label class="control-label col-sm-2" for="minrep">Min reputation:</label>
@@ -136,14 +143,25 @@
                                 <input type="text" class="form-control" id="olderthan" placeholder="Time in minutes">
                             </div>
                         </div>
-                        <div class="form-group"> 
-                            <div class="col-sm-offset-2 col-sm-10">
-                                <div class="checkbox">
-                                    <label><input type="checkbox" id="resteem"> Resteem</label>
-                                </div>
+                        <div class="col-sm-12 col-xs-12"><hr></div>
+                        <div class="form-group">
+                            <label class="control-label col-sm-2" for="explorer">Explorer:</label>
+                            <div class="col-sm-3">                            
+                                <select class="form-control" id="explorer">
+                                    <option class="is_ml" value="1">https://steemit.com</option>
+                                    <option class="is_ml" value="2">https://busy.org</option>
+                                    <option class="is_ml" value="3">https://utopian.io</option>
+                                    <option class="is_ml" value="3">https://chainbb.com</option>
+                                    <option class="is_ml" value="4">https://steemd.com</option>
+                                    <option class="is_ml" value="5">https://steemblockexplorer.com</option>
+                                    <option class="is_ml" value="6">Other</option>
+                                </select>
+                            </div>
+                            <div class="col-sm-3">
+                                <input type="text" class="form-control" id="whatexplorer" placeholder="What explorer?">
                             </div>
                         </div>
-                        <div class="form-group">
+                       <div class="form-group">
                             <div class="col-sm-offset-2 col-sm-2">
                                 <button type="button" class="btn btn-primary btn-block" onclick="search()">Search</button>
                             </div>                            
@@ -169,5 +187,5 @@
         </div>		
 	</body>
     <script src="./js/utils.js?1"></script>
-	<script src="./js/custom-feed.js?3"></script>        
+	<script src="./js/custom-feed.js?4"></script>        
 </html>

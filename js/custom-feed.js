@@ -7,7 +7,7 @@ var totalPostsResponses = 0;
 //var author_names = [];
 //var author_profiles = [];
 //var no_profile_image = 'https://steemit-production-imageproxy-thumbnail.s3.amazonaws.com/U5ds8wePoj1V1DoRR4bzzKUARNiywjp_64x64';
-var explorer = "https://steemit.com";
+var DEFAULT_EXPLORER = "https://steemit.com";
 var firstTime = true;
 var runningGetFeed = false;
 var numResponses = 0;
@@ -39,6 +39,7 @@ var VOTES_ALLOWED = [];
 var VOTES_AVOIDED = [];
 var RESTEEM = true;
 var expirationTime = 10;
+var explorer = DEFAULT_EXPLORER;
 
 now = new Date();
 var rpc_nodes = [
@@ -52,6 +53,11 @@ var rpc_nodes = [
   {url:"https://gtg.steem.house:8090",timeLastResponse:now}  
 ];
 var id_rpc_node = 0;
+
+$('#explorer').change(function(){
+  if(this.value == '6') $('#whatexplorer').show();
+  else $('#whatexplorer').hide();
+});
 
 $('#selType').change(function(){
   var t = this.value;
@@ -69,6 +75,15 @@ $('#selType').change(function(){
       $('#query').attr('placeholder','Accounts separated by commas');
       break;
   }
+  
+  switch(t){
+    case '4':
+    case '5':
+      $('#divhideresteem').show();
+      break;
+    default:
+      $('#divhideresteem').hide();
+  }
 });
 
 $(function () {
@@ -76,6 +91,9 @@ $(function () {
   $('#error-loading').hide();
   $('#loading-more').hide();
   $('.loader').hide();
+  
+  $('#divhideresteem').hide();
+  $('#whatexplorer').hide();
   setApiNode();  
   if(getQuery()) initConnectionSteemApi();
 });
@@ -100,8 +118,10 @@ function search(){
   var notags = ($('#notags').val()).replace(" ","");
   var votes = ($('#votes').val()).replace(" ","");
   var novotes = ($('#novotes').val()).replace(" ","");
-  var resteem = $('#resteem').is(':checked')?'true':'false'; 
-  var olderthan = ($('#olderthan').val()).replace(" ","");
+  var resteem = $('#hideresteem').is(':checked')?'false':'true'; 
+  var olderthan = ($('#olderthan').val()).replace(" ","");  
+  var new_explorer = $('#explorer option:selected').text();
+  if($('#explorer').val() == '6') new_explorer = $('#whatexplorer').val();
   
   qq = '?type='+type;  
   if(q != '') qq += '&'+'query='+q;
@@ -122,7 +142,8 @@ function search(){
   if(votes != '') qq += '&'+'votes='+votes;
   if(novotes != '') qq += '&'+'novotes='+novotes;
   if(resteem == 'false') qq += '&'+'resteem='+resteem;
-  if(olderthan != '') qq += '&'+'olderthan='+olderthan;  
+  if(olderthan != '') qq += '&'+'olderthan='+olderthan;
+  if(new_explorer != DEFAULT_EXPLORER) qq += '&'+'explorer='+new_explorer;
   
   var url = "https://joticajulian.github.io/custom-feed/index.html"+qq;
   console.log("opening: "+url);
@@ -241,7 +262,7 @@ function getFeed(){
         });
         break;      
       default:
-        $('#error-loading').html('Please select a type (trending, created, hot, feed, blog)').show();
+        $('#error-loading').html('Please select a type (trending, created, hot, feed, blog, votes)').show();
         $('.loader').hide();            
         endFeed = true;
     }
@@ -702,11 +723,21 @@ function getQuery(){
       }else if(x[0] == 'expirationtime'){
         expirationTime = parseFloat(x[1]);
       }else if(x[0] == 'resteem'){
-        $('#resteem').prop('checked', x[1]=='true');
+        $('#hideresteem').prop('checked', x[1]=='false');
         RESTEEM = (x[1] == 'true');
+        if(!RESTEEM) $('#divhideresteem').show();
       }else if(x[0] == 'olderthan'){
         $('#olderthan').val(x[1]);
         MAX_TIMESTAMP = new Date()-x[1]*1000*60;
+      }else if(x[0] == 'explorer'){
+        explorer = x[1];
+        var exp_option = $('#explorer option').filter(function(){ return this.text == explorer; });
+        if(exp_option.length == 0){
+          $('#explorer').val('6');
+          $('#whatexplorer').val(explorer).show();
+        }else{
+          exp_option.attr('selected', true);
+        }
       }
     }
   } 

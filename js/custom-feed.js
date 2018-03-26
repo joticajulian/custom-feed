@@ -35,6 +35,8 @@ var MIN_TIMESTAMP = new Date('2016-01-01');
 var MAX_TIMESTAMP = new Date();
 var TAGS_ALLOWED = [];
 var TAGS_AVOIDED = [];
+var AUTHORS_ALLOWED = [];
+var AUTHORS_AVOIDED = [];
 var VOTES_ALLOWED = [];
 var VOTES_AVOIDED = [];
 var RESTEEM = true;
@@ -116,6 +118,8 @@ function search(){
   var maxpayoutcomment = ($('#maxpayoutcomment').val()).replace(" ","");
   var tags = ($('#tags').val()).replace(" ","");
   var notags = ($('#notags').val()).replace(" ","");
+  var authors = ($('#authors').val()).replace(" ","");
+  var noauthors = ($('#noauthors').val()).replace(" ","");
   var votes = ($('#votes').val()).replace(" ","");
   var novotes = ($('#novotes').val()).replace(" ","");
   var resteem = $('#hideresteem').is(':checked')?'false':'true'; 
@@ -139,6 +143,8 @@ function search(){
   if(maxpayoutcomment != '') qq += '&'+'maxpayoutcomment='+maxpayoutcomment;
   if(tags != '') qq += '&'+'tags='+tags;
   if(notags != '') qq += '&'+'notags='+notags;
+  if(authors != '') qq += '&'+'authors='+authors;
+  if(noauthors != '') qq += '&'+'noauthors='+noauthors;
   if(votes != '') qq += '&'+'votes='+votes;
   if(novotes != '') qq += '&'+'novotes='+novotes;
   if(resteem == 'false') qq += '&'+'resteem='+resteem;
@@ -504,6 +510,10 @@ function postPassFilter(post){
      
      (TAGS_AVOIDED.length == 0 || (TAGS_AVOIDED.length > 0 && typeof TAGS_AVOIDED.find(function(t){for(var i=0;i<tags.length;i++) if(tags[i] == t) return true; return false;}) === 'undefined')) &&
      
+     (AUTHORS_ALLOWED.length == 0 || (AUTHORS_ALLOWED.length > 0 && typeof AUTHORS_ALLOWED.find(function(a){return a==post.author;}) !== 'undefined')) &&
+     
+     (AUTHORS_AVOIDED.length == 0 || (AUTHORS_AVOIDED.length > 0 && typeof AUTHORS_AVOIDED.find(function(a){return a==post.author;}) === 'undefined')) &&
+     
      (VOTES_ALLOWED.length == 0 || (VOTES_ALLOWED.length > 0 && typeof VOTES_ALLOWED.find(function(v){for(var i=0;i<votes.length;i++) if(votes[i].voter == v) return true; return false;}) !== 'undefined')) &&
      
      (VOTES_AVOIDED.length == 0 || (VOTES_AVOIDED.length > 0 && typeof VOTES_AVOIDED.find(function(v){for(var i=0;i<votes.length;i++) if(votes[i].voter == v) return true; return false;}) === 'undefined')) &&
@@ -714,6 +724,12 @@ function getQuery(){
       }else if(x[0] == 'notags'){
         $('#notags').val(x[1]);
         TAGS_AVOIDED = x[1].split(',');
+      }else if(x[0] == 'authors'){
+        $('#authors').val(x[1]);
+        AUTHORS_ALLOWED = x[1].split(',');
+      }else if(x[0] == 'noauthors'){
+        $('#noauthors').val(x[1]);
+        AUTHORS_AVOIDED = x[1].split(',');
       }else if(x[0] == 'votes'){
         $('#votes').val(x[1]);
         VOTES_ALLOWED = x[1].split(',');

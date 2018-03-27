@@ -1,6 +1,7 @@
 var limit = 10;
 var querys = [];
 var typeGetDiscussions = 'trending';
+var bot_names = ['minnowbooster','randowhale','smartmarket'];                  
 var posts = [];
 var totalPostsRequested = 0;
 var totalPostsResponses = 0;
@@ -39,9 +40,11 @@ var AUTHORS_ALLOWED = [];
 var AUTHORS_AVOIDED = [];
 var VOTES_ALLOWED = [];
 var VOTES_AVOIDED = [];
+var NOVOTEBOTS = false;
 var RESTEEM = true;
 var expirationTime = 10;
 var explorer = DEFAULT_EXPLORER;
+
 
 now = new Date();
 var rpc_nodes = [
@@ -122,8 +125,9 @@ function search(){
   var noauthors = ($('#noauthors').val()).replace(" ","");
   var votes = ($('#votes').val()).replace(" ","");
   var novotes = ($('#novotes').val()).replace(" ","");
+  var novotebots = $('#novotebots').is(':checked')?'true':'false';
   var resteem = $('#hideresteem').is(':checked')?'false':'true'; 
-  var olderthan = ($('#olderthan').val()).replace(" ","");  
+  var olderthan = ($('#olderthan').val()).replace(" ","");   
   var new_explorer = $('#explorer option:selected').text();
   if($('#explorer').val() == '6') new_explorer = $('#whatexplorer').val();
   
@@ -147,6 +151,7 @@ function search(){
   if(noauthors != '') qq += '&'+'noauthors='+noauthors;
   if(votes != '') qq += '&'+'votes='+votes;
   if(novotes != '') qq += '&'+'novotes='+novotes;
+  if(novotebots != '') qq += '&'+'novotebots='+novotebots;
   if(resteem == 'false') qq += '&'+'resteem='+resteem;
   if(olderthan != '') qq += '&'+'olderthan='+olderthan;
   if(new_explorer != DEFAULT_EXPLORER) qq += '&'+'explorer='+new_explorer;
@@ -164,7 +169,15 @@ function handleErrorPrice(err){
   initConnectionSteemApi();
 }
 
-function initConnectionSteemApi(){  
+function initConnectionSteemApi(){
+  if(NOVOTEBOTS){
+    $.get('https://steembottracker.net/bid_bots', function (data) {
+      data.forEach(function (bot) {
+        VOTES_AVOIDED.push(bot.name);        
+      });
+    });
+  }
+  
   steem.api.getCurrentMedianHistoryPrice(function(err, result){
     if (err || !result){
       handleErrorPrice(err);
@@ -736,6 +749,9 @@ function getQuery(){
       }else if(x[0] == 'novotes'){
         $('#novotes').val(x[1]);
         VOTES_AVOIDED = x[1].split(',');
+      }else if(x[0] == 'novotebots'){
+        $('#novotebots').prop('checked', x[1]=='true');
+        NOVOTEBOTS = (x[1] == 'true');
       }else if(x[0] == 'expirationtime'){
         expirationTime = parseFloat(x[1]);
       }else if(x[0] == 'resteem'){

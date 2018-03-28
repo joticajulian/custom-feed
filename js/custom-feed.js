@@ -1,7 +1,6 @@
 var limit = 10;
 var querys = [];
 var typeGetDiscussions = 'trending';
-var bot_names = ['minnowbooster','randowhale','smartmarket'];                  
 var posts = [];
 var totalPostsRequested = 0;
 var totalPostsResponses = 0;
@@ -171,6 +170,9 @@ function handleErrorPrice(err){
 
 function initConnectionSteemApi(){
   if(NOVOTEBOTS){
+    VOTES_AVOIDED.push('minnowbooster');
+    VOTES_AVOIDED.push('randowhale');
+    VOTES_AVOIDED.push('smartmarket');
     $.get('https://steembottracker.net/bid_bots', function (data) {
       data.forEach(function (bot) {
         VOTES_AVOIDED.push(bot.name);        

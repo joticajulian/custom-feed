@@ -8,6 +8,8 @@ var totalPostsResponses = 0;
 //var author_profiles = [];
 //var no_profile_image = 'https://steemit-production-imageproxy-thumbnail.s3.amazonaws.com/U5ds8wePoj1V1DoRR4bzzKUARNiywjp_64x64';
 var DEFAULT_EXPLORER = "https://steemit.com";
+var URL_CUSTOM_FEED = "https://joticajulian.github.io/custom-feed/index.html";
+
 var firstTime = true;
 var runningGetFeed = false;
 var numResponses = 0;
@@ -150,12 +152,12 @@ function search(){
   if(noauthors != '') qq += '&'+'noauthors='+noauthors;
   if(votes != '') qq += '&'+'votes='+votes;
   if(novotes != '') qq += '&'+'novotes='+novotes;
-  if(novotebots != '') qq += '&'+'novotebots='+novotebots;
+  if(novotebots == 'true') qq += '&'+'novotebots='+novotebots;
   if(resteem == 'false') qq += '&'+'resteem='+resteem;
   if(olderthan != '') qq += '&'+'olderthan='+olderthan;
   if(new_explorer != DEFAULT_EXPLORER) qq += '&'+'explorer='+new_explorer;
   
-  var url = "https://joticajulian.github.io/custom-feed/index.html"+qq;
+  var url = URL_CUSTOM_FEED + qq;
   console.log("opening: "+url);
   window.open(url, "_self");
 }
@@ -619,7 +621,7 @@ function postHtml(post){
     '        ('+getReputation(post.author_reputation)+')'+
     '      </span>'+
     '      <span class="tag">'+
-    '        in '+tag+
+    '        in <a href="'+linkToTag(tag)+'">'+tag+'</a>'+
     '      </span>'+
     '      <span class="timestamp">'+
     '        • '+getTimestamp(post.created)+
@@ -660,6 +662,22 @@ function toggleSearch(){
   $('#search-block').toggle();
   if($('#toogle-search').text() == 'Hide search options') $('#toogle-search').text('Show search options');
   else $('#toogle-search').text('Hide search options');
+}
+
+function linkToTag(tag){
+  var search = document.location.search.substr(1).split('&');
+  var new_search = URL_CUSTOM_FEED + '?';
+  for(var i=0;i<search.length;i++){
+    var x = search[i].split('=');
+    if(x[0] == 'query'){
+      x[1] = tag;
+    }else if(x[0] == 'type'){
+      if(x[1]!='trending' && x[1]!='created' && x[1]!='hot') x[1] = 'trending';      
+    }
+    if(i>0) new_search += '&';
+    new_search += x[0] + '=' + x[1];
+  }
+  return new_search;
 }
 
 function getQuery(){
